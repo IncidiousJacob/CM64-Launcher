@@ -20,6 +20,7 @@ class MainWindow : public QMainWindow {
         QPushButton play_build{"Play selected build",this};
         QCheckBox save_launch_opts{"Save launch options", this};
         QPushButton manage_build{"Manage selected build", this};
+        QPushButton check_for_updates{"Check for updates", this};
         QPushButton create_default_build{"Compile default SM64AP build", this};
         QPushButton create_custom_build{"Compile custom build", this};
         QPushButton recheck_requirements{"Requirements and Debugging", this};
@@ -51,4 +52,7 @@ class MainWindow : public QMainWindow {
         void spawnBuildManager();
         void spawnRequirementHandler();
         void buildSelectionHandler(QListWidgetItem *current, QListWidgetItem *previous);
+        void checkForUpdates();
+        void updateCheckCallback(int exitcode);
+        void rebuildFinishCallback(int exitcode);
 };

@@ -6,3 +6,5 @@ A launcher specialising in the [Archipelago](https://archipelago.gg) build of sm
 
 Go [here](https://github.com/N00byKing/SM64AP-Launcher/releases) for releases.
 Note: These are just updates to the launcher, not the game itself!
+
+test
