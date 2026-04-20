@@ -44,6 +44,7 @@ MainWindow::MainWindow() {
     QObject::connect(&use_advanced, &QCheckBox::toggled, this, &MainWindow::setAdvanced);
     QObject::connect(&play_build, &QPushButton::released, this, &MainWindow::startGame);
     QObject::connect(&manage_build, &QPushButton::released, this, &MainWindow::spawnBuildManager);
+    QObject::connect(&check_for_updates, &QPushButton::released, this, &MainWindow::checkForUpdates);
     QObject::connect(&create_default_build, &QPushButton::released, this, &MainWindow::spawnDefaultConfigurator);
     QObject::connect(&create_custom_build, &QPushButton::released, this, &MainWindow::spawnAdvancedConfigurator);
     QObject::connect(&recheck_requirements, &QPushButton::released, this, &MainWindow::spawnRequirementHandler);
@@ -60,6 +61,7 @@ void MainWindow::setLocations() {
     play_build.setGeometry(550,40,200,30);
     save_launch_opts.setGeometry(550, 70, 200,30);
     manage_build.setGeometry(550,100,200,30);
+    check_for_updates.setGeometry(550,130,200,30);
     create_default_build.setGeometry(550,160,200,30);
     create_custom_build.setGeometry(550,200,200,30);
     recheck_requirements.setGeometry(550,240,200,30);
@@ -83,6 +85,7 @@ void MainWindow::parseBuilds() {
         launch_options.clear();
         play_build.setEnabled(false);
         manage_build.setEnabled(false);
+        check_for_updates.setEnabled(false);
         launch_options.setEnabled(false);
     }
 }
@@ -173,6 +176,7 @@ void MainWindow::buildSelectionHandler(QListWidgetItem *current, QListWidgetItem
 
     play_build.setEnabled(true);
     manage_build.setEnabled(true);
+    check_for_updates.setEnabled(true);
     launch_options.setEnabled(true);
 }
 
@@ -192,4 +196,42 @@ void MainWindow::startGame() {
     }
     QString no_newlines_args = launch_options.toPlainText().replace("\n", " ");
     PlatformRunner::runProcessDetached("./presets/run_game.sh " + no_newlines_args, selected_build);
+}
+
+void MainWindow::checkForUpdates() {
+    if (selected_build.name == "_None") {
+        QMessageBox::information(this, "No build selected", "You need to select a build from the left first.");
+        return;
+    }
+    
+    this->setEnabled(false);
+    
+    std::function<void(int)> callback = std::bind(&MainWindow::updateCheckCallback, this, std::placeholders::_1);
+    PlatformRunner::runProcess("./presets/update_check.sh", selected_build, callback);
+}
+
+void MainWindow::updateCheckCallback(int exitcode) {
+    if (exitcode == 0) {
+        // Update found and pulled. Rebuild.
+        QMessageBox::information(this, "Update found!", "An update was found and downloaded. Rebuilding now...");
+        std::function<void(int)> callback = std::bind(&MainWindow::rebuildFinishCallback, this, std::placeholders::_1);
+        PlatformRunner::runProcess("./presets/compile_build.sh", selected_build, callback);
+    } else if (exitcode == 1) {
+        // Already up to date
+        QMessageBox::information(this, "No updates", "Your build is already up to date.");
+        this->setEnabled(true);
+    } else {
+        // Error
+        QMessageBox::critical(this, "Update error", "There was an error checking for updates or pulling changes. Check your internet connection or the build directory.");
+        this->setEnabled(true);
+    }
+}
+
+void MainWindow::rebuildFinishCallback(int exitcode) {
+    if (exitcode == 0) {
+        QMessageBox::information(this, "Rebuild successful!", "The build was updated and recompiled successfully.");
+    } else {
+        QMessageBox::critical(this, "Rebuild error!", "The update was pulled, but the recompilation failed.");
+    }
+    this->setEnabled(true);
 }
