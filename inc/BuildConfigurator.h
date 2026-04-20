@@ -29,7 +29,7 @@ class BuildConfigurator : public QWidget {
             QString make_flags;
             QStringList patches;
             QString default_launch_opts =
-                "--sm64ap_name \"NAME\"\n"
+                "--sm64ap_name \"Test\"\n"
                 "--sm64ap_ip archipelago.gg:PORT\n"
                 "--sm64ap_passwd \"None\"";
         };
@@ -37,7 +37,7 @@ class BuildConfigurator : public QWidget {
     private:
         using QWidget::QWidget;
 
-        QLineEdit repo_select{"https://github.com/N00byKing/sm64ex", this};
+        QLineEdit repo_select{"https://github.com/IncidiousJacob/Cursed-Mario-64", this};
         QLabel repo_select_label{"Repository", this};
         QLineEdit branch_select{"archipelago", this};
         QLabel branch_select_label{"Branch", this};
