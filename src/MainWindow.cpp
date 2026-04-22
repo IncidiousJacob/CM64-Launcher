@@ -18,6 +18,7 @@
 #include "BuildConfigurator.h"
 #include "PlatformRunner.h"
 #include "RequirementHandler.h"
+#include "LogManager.h"
 
 MainWindow::MainWindow() {
     // Load config
@@ -66,6 +67,9 @@ void MainWindow::setLocations() {
     create_custom_build.setGeometry(550,200,200,30);
     recheck_requirements.setGeometry(550,240,200,30);
     use_advanced.setGeometry(555, 270, 220, 30);
+
+    update_log_label.setGeometry(30, 280, 200, 30);
+    update_output.setGeometry(30, 310, 740, 270);
 }
 
 void MainWindow::setAdvanced(bool enable) {
@@ -205,6 +209,8 @@ void MainWindow::checkForUpdates() {
     }
     
     this->setEnabled(false);
+    update_output.clear();
+    LogManager::forkLogTo(&update_output);
     
     std::function<void(int)> callback = std::bind(&MainWindow::updateCheckCallback, this, std::placeholders::_1);
     PlatformRunner::runProcess("./presets/update_check.sh", selected_build, callback);
@@ -219,10 +225,12 @@ void MainWindow::updateCheckCallback(int exitcode) {
     } else if (exitcode == 1) {
         // Already up to date
         QMessageBox::information(this, "No updates", "Your build is already up to date.");
+        LogManager::unlinkFork();
         this->setEnabled(true);
     } else {
         // Error
         QMessageBox::critical(this, "Update error", "There was an error checking for updates or pulling changes. Check your internet connection or the build directory.");
+        LogManager::unlinkFork();
         this->setEnabled(true);
     }
 }
@@ -233,5 +241,6 @@ void MainWindow::rebuildFinishCallback(int exitcode) {
     } else {
         QMessageBox::critical(this, "Rebuild error!", "The update was pulled, but the recompilation failed.");
     }
+    LogManager::unlinkFork();
     this->setEnabled(true);
 }

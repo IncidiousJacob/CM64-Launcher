@@ -9,11 +9,12 @@
 #include "BuildConfigurator.h"
 #include "BuildManager.h"
 #include "RequirementHandler.h"
+#include "OutputWidget.h"
 
 class MainWindow : public QMainWindow {
     public:
         static constexpr int window_w = 800;
-        static constexpr int window_h = 300;
+        static constexpr int window_h = 600;
         MainWindow();
     private:
         using QMainWindow::QMainWindow;
@@ -31,6 +32,8 @@ class MainWindow : public QMainWindow {
         QPlainTextEdit selected_build_info{"No build selected", this};
         QLabel launch_options_label{"Launch Options:",this};
         QPlainTextEdit launch_options{this};
+        QLabel update_log_label{"Update Log:", this};
+        OutputWidget update_output{this};
         // Other
         std::unique_ptr<BuildConfigurator> configurator;
         std::unique_ptr<RequirementHandler> requirement_handler;
